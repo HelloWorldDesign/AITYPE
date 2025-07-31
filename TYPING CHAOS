@@ -50,3 +50,128 @@ def correct_view(request):
 #     .then(data => document.getElementById('result').innerText = data.corrected);
 # }
 # </script>
+
+
+
+ONION THREE STEPS 
+
+# Django AI Text Corrector – Faza 1: Ispravka očiglednih grešaka
+
+Ovo je osnovni kod za Django aplikaciju koja prima tekst pun grešaka, koristi OpenAI (ili lokalni AI model) da ispravi očigledne greške i vraća ispravljeni tekst.
+
+## 1. Instalacija
+```bash
+pip install django openai django-cors-headers
+```
+
+## 2. Podešavanja – `settings.py`
+Dodaj u `INSTALLED_APPS`:
+```python
+INSTALLED_APPS = [
+    ...
+    'corsheaders',
+    'textcorrector',  # naša app
+]
+```
+Dodaj middleware:
+```python
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    ...
+]
+CORS_ALLOW_ALL_ORIGINS = True
+```
+
+## 3. URLs – `urls.py`
+```python
+from django.urls import path
+from textcorrector.views import correct_text
+
+urlpatterns = [
+    path('api/correct/', correct_text),
+]
+```
+
+## 4. View – `views.py`
+```python
+import openai
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+openai.api_key = 'YOUR_OPENAI_API_KEY'  # zamijeni s tvojim ključem
+
+@csrf_exempt
+def correct_text(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        raw_text = data.get('text', '')
+
+        prompt = f"Ispravi tekst tako da bude gramatički tačan i smislen, čak i ako sadrži greške: {raw_text}"
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+
+        corrected_text = response.choices[0].message.content.strip()
+        return JsonResponse({'corrected': corrected_text})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+```
+
+## 5. Frontend – `templates/index.html`
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Ispravljač Teksta</title>
+</head>
+<body>
+  <h1>Unesi tekst</h1>
+  <textarea id="inputText" rows="6" cols="60"></textarea><br>
+  <button onclick="sendText()">Ispravi</button>
+  <h2>Rezultat:</h2>
+  <p id="output"></p>
+
+  <script>
+    function sendText() {
+      const text = document.getElementById('inputText').value;
+
+      fetch('http://localhost:8000/api/correct/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('output').innerText = data.corrected;
+      });
+    }
+  </script>
+</body>
+</html>
+```
+
+---
+
+✅ Kad ovo pokreneš (`python manage.py runserver`), možeš testirati unos teksta sa greškama i dobiti automatski ispravljen tekst.
+
+Kad potvrdiš da radi, možemo preći na **Fazu 2** – dvosmislene rečenice i AI prijedloge!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
