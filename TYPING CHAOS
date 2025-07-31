@@ -1,0 +1,52 @@
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+# Dummy AI correction function (replace with real AI model or API call)
+def correct_text(input_text):
+    # Ovo je samo placeholder koji "popravlja" poznate greške
+    corrections = {
+        "mroa": "mora",
+        "bifp": "biti",
+        "gotog": "gotovo",
+        "nisat": "ništa",
+    }
+    words = input_text.split()
+    corrected = [corrections.get(word, word) for word in words]
+    return " ".join(corrected)
+
+@csrf_exempt
+def correct_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            raw_text = data.get('text', '')
+            corrected_text = correct_text(raw_text)
+            return JsonResponse({'corrected': corrected_text})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+# In urls.py add:
+# from django.urls import path
+# from .views import correct_view
+# urlpatterns = [
+#     path('correct/', correct_view, name='correct_view'),
+# ]
+
+# Frontend example (basic HTML + JS):
+# <textarea id="raw"></textarea>
+# <button onclick="sendText()">Ispravi</button>
+# <p id="result"></p>
+# <script>
+# function sendText() {
+#     fetch('/correct/', {
+#         method: 'POST',
+#         headers: { 'Content-Type': 'application/json' },
+#         body: JSON.stringify({ text: document.getElementById('raw').value })
+#     })
+#     .then(res => res.json())
+#     .then(data => document.getElementById('result').innerText = data.corrected);
+# }
+# </script>
