@@ -153,11 +153,7 @@ def correct_text(request):
 </html>
 ```
 
----
 
-✅ Kad ovo pokreneš (`python manage.py runserver`), možeš testirati unos teksta sa greškama i dobiti automatski ispravljen tekst.
-
-Kad potvrdiš da radi, možemo preći na **Fazu 2** – dvosmislene rečenice i AI prijedloge!
 
 
 
